@@ -1,0 +1,140 @@
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table orders \
+--warehouse-dir /user/cloudera
+
+
+
+
+
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table customers \
+--warehouse-dir /user/cloudera
+
+
+
+
+
+
+CREATE external TABLE customers(
+customer_id int,customer_fname string,customer_lname string,customer_email string,
+customer_password string,
+customer_street string,customer_city string,customer_state string,customer_zipcode string) 
+row format delimited fields terminated by ',' stored as textfile location '/user/cloudera/customers';
+
+
+
+
+CREATE external TABLE orders(
+order_id int,order_date string,order_customer_id int,order_status string)
+row format delimited fields terminated by ',' 
+stored as textfile location '/user/cloudera/orders';
+
+
+
+
+set hive.auto.convert.join;(this property must be true to enable mapside join)
+
+
+SELECT c.customer_id, c.customer_fname, c.customer_lname, o.order_id, o.order_date 
+FROM orders o JOIN customers c ON (o.order_customer_id = c.customer_id) limit 10;
+
+
+
+
+
+set hive.enforce.bucketing;
+
+
+
+
+
+hive> set hive.enforce.bucketing;
+hive.enforce.bucketing=false
+hive> set hive.enforce.bucketing=true;
+hive> set hive.enforce.bucketing;
+hive.enforce.bucketing=true
+
+
+
+
+
+CREATE external TABLE customers_bucketed(
+customer_id int,customer_fname string,customer_lname string,customer_email string,
+customer_password string,customer_street string,customer_city string,customer_state string,
+customer_zipcode string)
+clustered by(customer_id) into 4 buckets row format delimited fields terminated BY ',';
+
+
+
+CREATE external TABLE orders_bucketed(order_id int,order_date string,order_customer_id int,
+order_status string) clustered by(order_customer_id)
+into 8 buckets row format delimited fields terminated BY ',';
+
+
+insert into customers_bucketed select * from customers;
+
+
+insert into orders_bucketed select * from orders;
+
+
+
+dfs -ls /user/hive/warehouse/bigdatabyKT.db
+
+
+
+
+
+
+hive> set hive.optimize.bucketmapjoin;
+hive.optimize.bucketmapjoin=false
+hive> set hive.optimize.bucketmapjoin=true;
+hive> set hive.optimize.bucketmapjoin;
+hive.optimize.bucketmapjoin=true
+
+
+
+SELECT c.customer_id, c.customer_fname, c.customer_lname, o.order_id, o.order_date 
+FROM customers_bucketed c JOIN orders_bucketed o 
+ON (c.customer_id = o.order_customer_id) limit 10;
+
+
+
+hive> select order_status,count(order_id) from orders group by order_status;
+
+
+
+OK
+order_status    _c1
+CANCELED        1428
+CLOSED  7556
+COMPLETE        22899
+ON_HOLD 3798
+PAYMENT_REVIEW  729
+PENDING 7610
+PENDING_PAYMENT 15030
+PROCESSING      8275
+SUSPECTED_FRAUD 1558
+Time taken: 66.864 seconds, Fetched: 9 row(s)
+hive>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
