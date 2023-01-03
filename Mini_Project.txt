@@ -36,6 +36,19 @@ row format delimited fields terminated by ','
 stored as textfile location '/user/cloudera/orders';
 
 
+hive> select count(*) from orders;
+OK
+_c0
+68883
+Time taken: 88.34 seconds, Fetched: 1 row(s)
+hive>
+
+hive> select count(*) from orders;
+OK
+_c0
+12435
+Time taken: 60.142 seconds, Fetched: 1 row(s)
+hive>
 
 
 set hive.auto.convert.join;(this property must be true to enable mapside join)
