@@ -1,0 +1,27 @@
+Ratings.dat
+Movies.dat
+find the top rated movies
+1. atleast 1000 people have rated
+2. rating should be > 4.5
+
+
+finding top movies (scala code)
+==================================
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
+import org.apache.spark.SparkContext
+
+object JoinDemo extends App {
+Logger.getLogger("org").setLevel(Level.ERROR)
+val sc = new SparkContext("local[*]","joindemo")
+val ratingsRdd= sc.textFile("/Users/trendytech/Desktop/data/ratings.dat")
+val mappedRdd = ratingsRdd.map(x => {val fields = x.split("::")(fields(1),fields(2))})
+val newmappedRdd= mappedRdd.mapValues(x=>(x.toFloat,1.0))
+val reduceRdd = newmappedRdd.reduceByKey((x,y) => (x._1+y._1, x._2+y._2))
+val filteredRdd = reduceRdd.filter(x=>x._2._1 > 1000)
+val finalRdd = filteredRdd.mapValues(x => x._1/x._2).filter(x => x._2 > 4.5)
+val moviesRdd= sc.textFile("/Users/trendytech/Desktop/data/movies.dat")
+val moviesmappedRdd = moviesRdd.map(x => {val fields = x.split("::")(fields(0),(fields(1),fields(2)))})
+val joinedRdd = moviesmappedRdd.join(finalRdd)
+val topMoviesRdd = joinedRdd.map(x=>x._2._1)
+topMoviesRdd.collect.foreach(println)
