@@ -1,0 +1,1952 @@
+databricks-logoCall_functions_variables(Python)
+ Import Notebook
+Pre-Prod Environment Vairables
+rawFiles_file_path="/mnt/datasetbigdata/raw-data/lending_loan/"
+processed_file_path="/mnt/datasetbigdata/processed-data/pre-prod/lending_loan/"
+ 
+ 
+ 
+ 
+ 
+cleanedScript_folder_path="/Users/Lending_Loans/Data-Cleaning/"  
+cleanedFiles_file_path="/mnt/datasetbigdata/cleaned-data/lending_loan/"
+dbfs_file_path="/FileStore/tables/"
+from pyspark.sql.functions import current_timestamp
+ 
+def ingestDate(input_df):
+    date_df=input_df.withColumn("ingest_date",current_timestamp())
+    return date_df
+
+
+
+
+
+
+
+
+
+
+databricks-logoDataIngestion_Sample(Python)
+ Import Notebook
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+customer_schema = StructType(fields=[StructField("cust_id", StringType(), True),
+                                     StructField("mem_id", StringType(), True),
+                                     StructField("fst_name", StringType(), False),
+                                     StructField("lst_name", StringType(), False),
+                                     StructField("prm_status", StringType(), False),
+                                     StructField("age", IntegerType(), False),
+                                     StructField("state", StringType(), False),
+                                     StructField("country", StringType(), False)
+                                    
+])
+import datetime
+def ingestDate():
+    load_date = datetime.datetime.today() - datetime.timedelta(days=1)
+    load_date_formatted = load_date.strftime ('%d%m%Y') 
+    return load_date_formatted
+    
+ 
+data_loaded_on=ingestDate()
+file_load_path="customer_data_"+str(data_loaded_on)+".csv"
+final_file_path="/mnt/datasetbigdata/raw-data/lending_loan/" + file_load_path
+print(final_file_path)
+/mnt/datasetbigdata/raw-data/lending_loan/customer_data_20012023.csv
+customer_df = spark.read \
+.option("header", True) \
+.schema(customer_schema) \
+.csv(final_file_path)
+display(customer_df)
+Table
+ 
+cust_id
+mem_id
+fst_name
+lst_name
+prm_status
+age
+state
+country
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+CUS1
+MEM1
+Carey
+Bertram
+FALSE
+64
+Pennsylvania
+USA
+CUS2
+MEM2
+Alex
+Chris
+FALSE
+50
+Alaska
+USA
+CUS3
+MEM3
+Urban
+Moses
+FALSE
+77
+Acceptable
+USA
+CUS4
+MEM4
+Clint
+Miles
+TRUE
+37
+Alaska
+USA
+CUS5
+MEM5
+Hilliard
+Mose
+FALSE
+22
+Washington
+USA
+CUS6
+MEM6
+Colonel
+Raymond
+TRUE
+34
+New Jersey
+USA
+CUS7
+MEM7
+Gabe
+Clifford
+FALSE
+44
+Virginia
+USA
+CUS8
+MEM8
+Godfrey
+Waldo
+TRUE
+74
+Maryland
+USA
+CUS9
+MEM9
+Homer
+Henry
+FALSE
+40
+Arizona
+USA
+CUS10
+MEM10
+Charley
+Benjiman
+FALSE
+61
+Virginia
+USA
+CUS11
+MEM11
+Perley
+Clare
+TRUE
+69
+Michigan
+USA
+CUS12
+MEM12
+Lester
+Pleasant
+FALSE
+62
+Michigan
+USA
+CUS13
+MEM13
+Garfield
+Mitchell
+FALSE
+47
+Utah
+USA
+CUS14
+MEM14
+Obie
+Archibald
+FALSE
+87
+Wyoming
+USA
+CUS15
+MEM15
+Elvin
+Davis
+FALSE
+71
+Pennsylvania
+USA
+CUS16
+MEM16
+Melville
+Isiah
+FALSE
+29
+Alaska
+USA
+CUS17
+MEM17
+Ezekiel
+Clara
+FALSE
+41
+Illinois
+USA
+Truncated results, showing first 1,000 rows.
+raw_storage_path="/mnt/datasetbigdata/raw-data/lending_loan/"
+% run '/Users/swecha34@outlook.com/2023-01-21 - DBFS Example'
+f{raw_storage_path}
+from pyspark.sql.functions import current_timestamp
+def ingestDate(input_df):
+    output_df=input_df.withColumn("ingest_date", current_timestamp())
+    return output_df
+final_df=ingestDate(input_df)
+display(final_df)
+
+
+
+
+
+
+
+
+
+
+
+
+databricks-logohive_concepts(SQL)
+ Import Notebook
+Hive Concepts
+Understand the hive concepts in databricks
+Database objects
+Hive managed tables
+Hive external tables
+Create views
+%run "/Users/swecha34@outlook.com/Lending_Loans/Adhoc_Topics/Call_functions_variables"
+CREATE DATABASE IF NOT EXISTS lending_loan_tmp;
+OK
+SHOW databases;
+Table
+ 
+databaseName
+1
+2
+3
+default
+lending_loan_dev
+lending_loan_tmp
+3 rows
+DESCRIBE DATABASE lending_loan_tmp; 
+Table
+ 
+database_description_item
+database_description_value
+1
+2
+3
+4
+5
+Catalog Name
+spark_catalog
+Namespace Name
+lending_loan_tmp
+Comment
+Location
+dbfs:/user/hive/warehouse/lending_loan_tmp.db
+Owner
+root
+5 rows
+DESCRIBE DATABASE EXTENDED lending_loan_tmp; 
+Table
+ 
+database_description_item
+database_description_value
+1
+2
+3
+4
+5
+6
+Catalog Name
+spark_catalog
+Namespace Name
+lending_loan_tmp
+Comment
+Location
+dbfs:/user/hive/warehouse/lending_loan_tmp.db
+Owner
+root
+Properties
+6 rows
+--DROP DATABASE lending_loan_tmp;
+OK
+CREATE DATABASE IF NOT EXISTS lending_loan_dev LOCATION '/mnt/datasetbigdata/cleaned-data/'
+OK
+USE default;
+OK
+SHOW TABLES;
+Table
+ 
+database
+tableName
+isTemporary
+1
+default
+loan_customer_data_csv
+false
+1 row
+SHOW TABLES IN lending_loan_tmp;
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+3
+lending_loan_tmp
+customer_details
+false
+lending_loan_tmp
+customer_details_alaska
+false
+lending_loan_tmp
+customer_details_external
+false
+3 rows
+USE lending_loan_tmp;
+OK
+Hive Managed Tables
+Create hive managed table
+Read data from managed tables
+Drop managed tables
+%python
+customer_df = spark.read.parquet(f"{cleanedFiles_file_path}customer_details")
+%python
+customer_df.write.format("parquet").saveAsTable("lending_loan_tmp.customer_details")
+SHOW TABLES IN lending_loan_tmp;
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+3
+lending_loan_tmp
+customer_details
+false
+lending_loan_tmp
+customer_details_alaska
+false
+lending_loan_tmp
+customer_details_external
+false
+3 rows
+select count(*) from lending_loan_tmp.customer_details
+Table
+ 
+count(1)
+1
+130776
+1 row
+CREATE OR REPLACE TABLE lending_loan_tmp.customer_genz as
+SELECT * FROM lending_loan_tmp.customer_details WHERE age between 18 and 25
+Query returned no results
+select * from lending_loan_tmp.customer_genz
+Table
+ 
+customer_key
+ingest_date
+customer_id
+member_id
+first_name
+last_name
+premium_status
+age
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+c105736f4f27100cb9ce82e5233512233ba27d1d2541ff588c09c067caafd27c
+2023-02-04T03:28:00.026+0000
+CUS5
+MEM5
+Hilliard
+Mose
+FALSE
+22
+4ecdae8e04682c2a29d48a0741ebc1868337cf771f16a686563c2aeebdeb7a49
+2023-02-04T03:28:00.026+0000
+CUS27
+MEM27
+Ora
+Claud
+FALSE
+18
+c4a2d5d2da74147a5b12439f33b82f0188e8e8b35e3b6ff89b23abb3543577c5
+2023-02-04T03:28:00.026+0000
+CUS45
+MEM45
+Willard
+James
+TRUE
+19
+2a3a87c30819e9b1271a76f0339b4b2a06565fc35ac811f935ef6c3566653360
+2023-02-04T03:28:00.026+0000
+CUS46
+MEM46
+Avery
+Gust
+FALSE
+21
+a72e2c25a41d3ba592078c7bae39721f48fabfb10353f23a9d7ae485e627c3e7
+2023-02-04T03:28:00.026+0000
+CUS48
+MEM48
+Davis
+Berry
+TRUE
+23
+cbd5371bc5e8742bfc517c5cafd23424bbe4481cf3248d29443990dd1698b8c6
+2023-02-04T03:28:00.026+0000
+CUS60
+MEM60
+Augustine
+Valentine
+FALSE
+25
+db23be4d6045d72e4a2edbac03a7319218e77a9a6c32210a0b9f2f6ca8b39db4
+2023-02-04T03:28:00.026+0000
+CUS67
+MEM67
+Olaf
+Gordon
+FALSE
+23
+478a17b24551efb3ad2a4fed402cf72b99095d120fee63ceb10830a1e4358685
+2023-02-04T03:28:00.026+0000
+CUS70
+MEM70
+Coleman
+Lawrence
+TRUE
+19
+455a2de0e56546e618a80097bca73bb5a97d24e910a81207449acf3b65f048f4
+2023-02-04T03:28:00.026+0000
+CUS80
+MEM80
+Elisha
+Lige
+TRUE
+20
+a1830cd6888020e0e04fa4c88075cf2053057de2381e85df5c86c1bdfdb6f934
+2023-02-04T03:28:00.026+0000
+CUS88
+MEM88
+Shirley
+Rolla
+TRUE
+21
+501b9abd75b7f81957453ef37336144e7d1c884bbd5df7ff7c79743f398cccde
+2023-02-04T03:28:00.026+0000
+CUS120
+MEM120
+Nathaniel
+Bennie
+FALSE
+18
+39d9de82f9eb393f8aa6b46845943dfbd70cb588d7e2fd98ec311a1d7055a307
+2023-02-04T03:28:00.026+0000
+CUS122
+MEM122
+Almon
+Reuben
+FALSE
+20
+52dc735b6fa624224ecc880cad9ab765145aa362ccead318b877de94f078e191
+2023-02-04T03:28:00.026+0000
+CUS125
+MEM125
+Fay
+Eric
+TRUE
+18
+03a952d62b823d6fa08bddf8f9cae28121b5b1c39552291a0ca586845710425a
+2023-02-04T03:28:00.026+0000
+CUS129
+MEM129
+Jordan
+Axel
+TRUE
+21
+7adbc9fc6242676434603782f8f5c96e4466393d862e62860ee30952e2537e22
+2023-02-04T03:28:00.026+0000
+CUS131
+MEM131
+Doctor
+Casper
+TRUE
+23
+0d7d46f4c95d028f18d768458167b6d37977e6c885eebeb3468102c272055242
+2023-02-04T03:28:00.026+0000
+CUS140
+MEM140
+Irving
+Frederick
+FALSE
+19
+a89a45b712aac79fef532d406d6149f7c5ef0855e9b42c96db8cf1a96708e5af
+2023-02-04T03:28:00.026+0000
+CUS153
+MEM153
+Solomon
+Henderson
+TRUE
+24
+1,000 rows
+|
+Truncated data
+SHOW TABLES IN lending_loan_tmp;
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+3
+4
+lending_loan_tmp
+customer_details
+false
+lending_loan_tmp
+customer_details_alaska
+false
+lending_loan_tmp
+customer_details_external
+false
+lending_loan_tmp
+customer_genz
+false
+4 rows
+DROP TABLE lending_loan_tmp.customer_genz
+OK
+SHOW TABLES IN lending_loan_tmp;
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+3
+lending_loan_tmp
+customer_details
+false
+lending_loan_tmp
+customer_details_alaska
+false
+lending_loan_tmp
+customer_details_external
+false
+3 rows
+Hive External Tables
+Create external hive tables
+View the externally stored data
+Drop external tables
+CREATE DATABASE IF NOT EXISTS lending_loan_dev LOCATION 'f{cleanedScript_folder_path}'
+OK
+USE lending_loan_dev;
+SHOW TABLES;
+
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+lending_loan_dev
+customer_details
+false
+lending_loan_dev
+vw_state_customers_permanent
+false
+2 rows
+%python
+customer_df_external = spark.read.parquet(f"{cleanedFiles_file_path}customer_details")
+%python
+customer_df_external.write.format("parquet").saveAsTable("lending_loan_dev.customer_details_temp")
+DESC DATABASE EXTENDED lending_loan_dev;
+Table
+ 
+database_description_item
+database_description_value
+1
+2
+3
+4
+5
+6
+Catalog Name
+spark_catalog
+Namespace Name
+lending_loan_dev
+Comment
+Location
+dbfs:/mnt/datasetbigdata/cleaned-data
+Owner
+root
+Properties
+6 rows
+DESC EXTENDED lending_loan_dev.customer_details_temp;
+Table
+ 
+col_name
+data_type
+comment
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+customer_key
+string
+null
+ingest_date
+timestamp
+null
+customer_id
+string
+null
+member_id
+string
+null
+first_name
+string
+null
+last_name
+string
+null
+premium_status
+string
+null
+age
+int
+null
+state
+string
+null
+country
+string
+null
+# Detailed Table Information
+Catalog
+spark_catalog
+Database
+lending_loan_dev
+Table
+customer_details_temp
+Owner
+root
+Created Time
+Sat Feb 11 03:38:48 UTC 2023
+25 rows
+SELECT * FROM lending_loan_dev.customer_details_temp;
+Table
+ 
+customer_key
+ingest_date
+customer_id
+member_id
+first_name
+last_name
+premium_status
+age
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+8cfd986ef15a5a370483b4df8379651d6f7e5ea9edaac16783a9b2194874a9e3
+2023-02-11T02:52:48.493+0000
+CUS1
+MEM1
+Carey
+Bertram
+FALSE
+64
+9fa9da1ae4162c00492d611305e0b5c6188f65e8cddff74480cf57003311246c
+2023-02-11T02:52:48.493+0000
+CUS2
+MEM2
+Alex
+Chris
+FALSE
+50
+92e8cf83bc8ccc582a1baeba78d44d69ffae80262645d5ea5d75cf91f1d6f71e
+2023-02-11T02:52:48.493+0000
+CUS3
+MEM3
+Urban
+Moses
+FALSE
+77
+6921ac781086a8283170e77b1978db0f742dc08ee4c989072d4e1f3f54122d86
+2023-02-11T02:52:48.493+0000
+CUS4
+MEM4
+Clint
+Miles
+TRUE
+37
+c105736f4f27100cb9ce82e5233512233ba27d1d2541ff588c09c067caafd27c
+2023-02-11T02:52:48.493+0000
+CUS5
+MEM5
+Hilliard
+Mose
+FALSE
+22
+604b97965321c97849222f11ff9a8ac42ab15ad730de3981e8a234c99bdfde28
+2023-02-11T02:52:48.493+0000
+CUS6
+MEM6
+Colonel
+Raymond
+TRUE
+34
+25ce92860fa9b77d04ff34d408f7e998b4e2ce1d1f10cdc9ecc65337eedcfab2
+2023-02-11T02:52:48.493+0000
+CUS7
+MEM7
+Gabe
+Clifford
+FALSE
+44
+0d82eea56f1a25b299dba1e4662b9cd39fcdd19f3b756829bbea06c3cd9ce186
+2023-02-11T02:52:48.493+0000
+CUS8
+MEM8
+Godfrey
+Waldo
+TRUE
+74
+cb80e4e45527fc67cd933d6c71a2ad5a95aa23d0a5acf051b9cf43d4c63e7e8b
+2023-02-11T02:52:48.493+0000
+CUS9
+MEM9
+Homer
+Henry
+FALSE
+40
+8f12e8b62efcd5dd771328b65e8729162b9e0ae3e2aa5c1bc3bcf9df39b607b2
+2023-02-11T02:52:48.493+0000
+CUS10
+MEM10
+Charley
+Benjiman
+FALSE
+61
+8344753f3ce50890a9e04846399165290ddbfde05bdc0c6374b8b54b7b01e6e0
+2023-02-11T02:52:48.493+0000
+CUS11
+MEM11
+Perley
+Clare
+TRUE
+69
+ce4ed9c8698969c60683fb768ffb477d29f0ad8d808447d4f22b8922f8d7a9e1
+2023-02-11T02:52:48.493+0000
+CUS12
+MEM12
+Lester
+Pleasant
+FALSE
+62
+bc6456d7028de552d7f5ad1c55168c6c371ee0c3a84f90c6ee70ea50640c43c4
+2023-02-11T02:52:48.493+0000
+CUS13
+MEM13
+Garfield
+Mitchell
+FALSE
+47
+c62e172217b4d105dc0e4d9e0c476613488acc9213e463367716975fb7967319
+2023-02-11T02:52:48.493+0000
+CUS14
+MEM14
+Obie
+Archibald
+FALSE
+87
+6bc8e6bedc97bc975f5961c2574aef6415ee5fff9e99d2545b1abcec29c4de43
+2023-02-11T02:52:48.493+0000
+CUS15
+MEM15
+Elvin
+Davis
+FALSE
+71
+ba0e09ad47eac30cfc70aab2df136c772a32fb6be8992cd2a34d929a8ec55767
+2023-02-11T02:52:48.493+0000
+CUS16
+MEM16
+Melville
+Isiah
+FALSE
+29
+64b7b892bd8106693bd7c5417540cda874287e1ff0e17d036e379322a9ccfe42
+2023-02-11T02:52:48.493+0000
+CUS17
+MEM17
+Ezekiel
+Clara
+FALSE
+41
+1,000 rows
+|
+Truncated data
+--DROP TABLE lending_loan_tmp.customer_details_temp;
+OK
+CREATE EXTERNAL TABLE lending_loan_tmp.customer_details_external
+(
+customer_key STRING,
+ingest_date TIMESTAMP,
+customer_id STRING,
+member_id STRING,
+first_name STRING,
+last_name STRING,
+premium_status STRING ,
+age INT,
+state STRING,
+country STRING
+)
+USING PARQUET
+LOCATION "/mnt/datasetbigdata/cleaned-data/customer_details_external"
+OK
+INSERT INTO lending_loan_tmp.customer_details_external
+select * from lending_loan_tmp.customer_details
+OK
+--DROP TABLE lending_loan_tmp.customer_details_external
+OK
+DESC EXTENDED lending_loan_tmp.customer_details_external
+Table
+ 
+col_name
+data_type
+comment
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+customer_key
+string
+null
+ingest_date
+timestamp
+null
+customer_id
+string
+null
+member_id
+string
+null
+first_name
+string
+null
+last_name
+string
+null
+premium_status
+string
+null
+age
+int
+null
+state
+string
+null
+country
+string
+null
+# Detailed Table Information
+Catalog
+spark_catalog
+Database
+lending_loan_tmp
+Table
+customer_details_external
+Owner
+root
+Created Time
+Sat Feb 11 03:47:06 UTC 2023
+25 rows
+CREATE EXTERNAL TABLE lending_loan_tmp.customer_details_alaska 
+USING PARQUET
+LOCATION "/mnt/datasetbigdata/cleaned-data/customer_details_alaska"
+AS
+SELECT *
+  FROM lending_loan_tmp.customer_details_external
+ WHERE state='Alaska'
+Show result
+Untitled
+DESC EXTENDED lending_loan_tmp.customer_details_alaska;
+Table
+ 
+col_name
+data_type
+comment
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+customer_key
+string
+null
+ingest_date
+timestamp
+null
+customer_id
+string
+null
+member_id
+string
+null
+first_name
+string
+null
+last_name
+string
+null
+premium_status
+string
+null
+age
+int
+null
+state
+string
+null
+country
+string
+null
+# Detailed Table Information
+Catalog
+spark_catalog
+Database
+lending_loan_tmp
+Table
+customer_details_alaska
+Owner
+root
+Created Time
+Sat Feb 11 03:50:14 UTC 2023
+25 rows
+SELECT * FROM  lending_loan_tmp.customer_details_alaska;
+Table
+ 
+customer_key
+ingest_date
+customer_id
+member_id
+first_name
+last_name
+premium_status
+age
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+9fa9da1ae4162c00492d611305e0b5c6188f65e8cddff74480cf57003311246c
+2023-02-04T03:28:00.026+0000
+CUS2
+MEM2
+Alex
+Chris
+FALSE
+50
+6921ac781086a8283170e77b1978db0f742dc08ee4c989072d4e1f3f54122d86
+2023-02-04T03:28:00.026+0000
+CUS4
+MEM4
+Clint
+Miles
+TRUE
+37
+ba0e09ad47eac30cfc70aab2df136c772a32fb6be8992cd2a34d929a8ec55767
+2023-02-04T03:28:00.026+0000
+CUS16
+MEM16
+Melville
+Isiah
+FALSE
+29
+6068c3bd9820a7650ed6675e5cd273219ea39386af530f68f274b5a286be843f
+2023-02-04T03:28:00.026+0000
+CUS30
+MEM30
+Morton
+Ruben
+TRUE
+51
+6a64104e3a5836c83417d83428f665ce135bd13b36718caad47c0bb2c078cc69
+2023-02-04T03:28:00.026+0000
+CUS43
+MEM43
+Buster
+Jimmie
+TRUE
+48
+b4855dcc6a87b3b719b31df4e1c03c88f5a1001339f136b9e382a335edb5cc1f
+2023-02-04T03:28:00.026+0000
+CUS78
+MEM78
+Hilliard
+Warner
+TRUE
+88
+d9dc6a5a028f39fb3746b3938b73763f59fe9f0c8c67279bcce1402615ee1f04
+2023-02-04T03:28:00.026+0000
+CUS95
+MEM95
+Squire
+Rubin
+TRUE
+45
+30c5c55e9f31571981456d7cde9575e74b355921376941cdea360ad4abc2eced
+2023-02-04T03:28:00.026+0000
+CUS126
+MEM126
+Roger
+Lonzo
+FALSE
+68
+830c5d673e8e5f314c1ac54c4037a41a3b48f1380d4a7a29cf7fe0cae567c58b
+2023-02-04T03:28:00.026+0000
+CUS137
+MEM137
+Jimmie
+Riley
+FALSE
+65
+b4a3900d28a8ce2f28a322605cb8e0ff485c8f04295ae38fc44136c4da28c4a6
+2023-02-04T03:28:00.026+0000
+CUS159
+MEM159
+August
+Emile
+FALSE
+74
+2dc5901b586fad7509cabda987dd8d80455488ffd8d6251f8a3f6a0a65fc7036
+2023-02-04T03:28:00.026+0000
+CUS204
+MEM204
+Lynn
+Nick
+TRUE
+51
+c5bf7f93eb1942748e4386107e0d341fbec645dfd05918dc56e412580b9f0209
+2023-02-04T03:28:00.026+0000
+CUS240
+MEM240
+Finley
+Zeb
+TRUE
+58
+f7fb9a5975c1a75a10416bc386b478cdc22ce87b01f0d2716532c47e91978b9c
+2023-02-04T03:28:00.026+0000
+CUS246
+MEM246
+Warner
+Reginald
+FALSE
+28
+5033905c70ad86e6159df8413e5bc224b41dcb98bde619829fbafe7229cb25df
+2023-02-04T03:28:00.026+0000
+CUS258
+MEM258
+Roscoe
+Jay
+TRUE
+31
+0603c8aefae7ee87ba4a4afbd9ce7c36a2b3d6eacc6e5ab572e3f363b618d80f
+2023-02-04T03:28:00.026+0000
+CUS269
+MEM269
+Gideon
+Fate
+TRUE
+60
+72362a8f6675a833082cbb2928f6c5cbbffff9c640d5aa6592be9f9aa57c1c55
+2023-02-04T03:28:00.026+0000
+CUS302
+MEM302
+Willis
+Alford
+FALSE
+24
+6f90619888d98ad85da28c9c08b9981ce5d2966322d8e94cab9f8a9c2b7ebc57
+2023-02-04T03:28:00.026+0000
+CUS308
+MEM308
+Neal
+Orville
+TRUE
+73
+1,000 rows
+|
+Truncated data
+SHOW TABLES IN lending_loan_tmp;
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+3
+lending_loan_tmp
+customer_details
+false
+lending_loan_tmp
+customer_details_alaska
+false
+lending_loan_tmp
+customer_details_external
+false
+3 rows
+Different ways to create tables
+Schema & Data : Databricks (managed hive tables)
+Schema & Data : External (external hive tables)
+Schema: Databricks Table: External (external hive tables)
+Views on tables
+Create Temp View
+Create Global Temp View
+Create Permanent View
+USE lending_loan_tmp;
+OK
+CREATE OR REPLACE TEMP VIEW vw_premium_customers_temp
+AS
+SELECT *
+  FROM lending_loan_tmp.customer_details
+ WHERE premium_status='TRUE'
+OK
+SELECT * FROM vw_premium_customers_temp;
+Table
+ 
+customer_key
+ingest_date
+customer_id
+member_id
+first_name
+last_name
+premium_status
+age
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+6921ac781086a8283170e77b1978db0f742dc08ee4c989072d4e1f3f54122d86
+2023-02-04T03:28:00.026+0000
+CUS4
+MEM4
+Clint
+Miles
+TRUE
+37
+604b97965321c97849222f11ff9a8ac42ab15ad730de3981e8a234c99bdfde28
+2023-02-04T03:28:00.026+0000
+CUS6
+MEM6
+Colonel
+Raymond
+TRUE
+34
+0d82eea56f1a25b299dba1e4662b9cd39fcdd19f3b756829bbea06c3cd9ce186
+2023-02-04T03:28:00.026+0000
+CUS8
+MEM8
+Godfrey
+Waldo
+TRUE
+74
+8344753f3ce50890a9e04846399165290ddbfde05bdc0c6374b8b54b7b01e6e0
+2023-02-04T03:28:00.026+0000
+CUS11
+MEM11
+Perley
+Clare
+TRUE
+69
+bd63c6e0c3f105899903d48743a7f2e2914a75ae782ba655fe85f231665b5f7f
+2023-02-04T03:28:00.026+0000
+CUS18
+MEM18
+Ambrose
+Porter
+TRUE
+48
+1a9af642a095835f1c50fd0e141fc3d278e45e1707b7fcfab21f200e008dbf8b
+2023-02-04T03:28:00.026+0000
+CUS19
+MEM19
+Erwin
+Wong
+TRUE
+38
+a7ea5f4f2573b4e46eb9b2381c505256e0273ce29878491a764a926989188af8
+2023-02-04T03:28:00.026+0000
+CUS21
+MEM21
+Will
+Otho
+TRUE
+83
+f8a6782b92d1ee90fd02b6ea7666792d53c986318f32719776c3c136c85cd7da
+2023-02-04T03:28:00.026+0000
+CUS22
+MEM22
+Homer
+Nat
+TRUE
+52
+589b1bf197ce4c79e48f1f9576120fa87ee686fe2f3b178b9f9cb6e57efeccdc
+2023-02-04T03:28:00.026+0000
+CUS23
+MEM23
+Isadore
+Glen
+TRUE
+46
+e20402bae73e02856b8849dd4f5c97c4eded708efc66122e4560cf90fa36d35a
+2023-02-04T03:28:00.026+0000
+CUS25
+MEM25
+Finley
+Washington
+TRUE
+30
+51669befdbf3379a81008ebc051ad44974f5a2e320c525c777de8d27f3962716
+2023-02-04T03:28:00.026+0000
+CUS26
+MEM26
+Lee
+Fate
+TRUE
+74
+eae03b62bbd0d7b8d78d549dd13a60f99c69c855a7b29cf6f43397c2c17d14e5
+2023-02-04T03:28:00.026+0000
+CUS29
+MEM29
+Horatio
+Dave
+TRUE
+64
+6068c3bd9820a7650ed6675e5cd273219ea39386af530f68f274b5a286be843f
+2023-02-04T03:28:00.026+0000
+CUS30
+MEM30
+Morton
+Ruben
+TRUE
+51
+7672768ff9deb992d1ec3f70a7e64ce021e3e5cd1eac69392da9b74add35c69f
+2023-02-04T03:28:00.026+0000
+CUS31
+MEM31
+Bertram
+Eric
+TRUE
+75
+f2a5c9f2f74fbca681abe5d302251b7628167f88784672f7a3505ae827452514
+2023-02-04T03:28:00.026+0000
+CUS36
+MEM36
+Joel
+Saul
+TRUE
+39
+531964475b6ecbced0bf9bccc861fc4481c38f41be060b59eb8ea96d9a462131
+2023-02-04T03:28:00.026+0000
+CUS37
+MEM37
+Ellsworth
+Chester
+TRUE
+26
+bb2dfa402f5a76b7317ce1330448ff96c0c1cd9ef19042cb63a9ba4bf99ad50e
+2023-02-04T03:28:00.026+0000
+CUS40
+MEM40
+Cloyd
+Cal
+TRUE
+83
+1,000 rows
+|
+Truncated data
+CREATE OR REPLACE GLOBAL TEMP VIEW vw_state_customers_global
+AS
+SELECT * 
+  FROM lending_loan_tmp.customer_details
+ WHERE state like 'A%'
+OK
+SELECT * FROM global_temp.vw_state_customers_global
+Table
+ 
+customer_key
+ingest_date
+customer_id
+member_id
+first_name
+last_name
+premium_status
+age
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+9fa9da1ae4162c00492d611305e0b5c6188f65e8cddff74480cf57003311246c
+2023-02-04T03:28:00.026+0000
+CUS2
+MEM2
+Alex
+Chris
+FALSE
+50
+92e8cf83bc8ccc582a1baeba78d44d69ffae80262645d5ea5d75cf91f1d6f71e
+2023-02-04T03:28:00.026+0000
+CUS3
+MEM3
+Urban
+Moses
+FALSE
+77
+6921ac781086a8283170e77b1978db0f742dc08ee4c989072d4e1f3f54122d86
+2023-02-04T03:28:00.026+0000
+CUS4
+MEM4
+Clint
+Miles
+TRUE
+37
+cb80e4e45527fc67cd933d6c71a2ad5a95aa23d0a5acf051b9cf43d4c63e7e8b
+2023-02-04T03:28:00.026+0000
+CUS9
+MEM9
+Homer
+Henry
+FALSE
+40
+ba0e09ad47eac30cfc70aab2df136c772a32fb6be8992cd2a34d929a8ec55767
+2023-02-04T03:28:00.026+0000
+CUS16
+MEM16
+Melville
+Isiah
+FALSE
+29
+6068c3bd9820a7650ed6675e5cd273219ea39386af530f68f274b5a286be843f
+2023-02-04T03:28:00.026+0000
+CUS30
+MEM30
+Morton
+Ruben
+TRUE
+51
+1ad40a532343750828b3d2bfe09751bbe1a57afe08dd7eca296fd3e23ba86f6a
+2023-02-04T03:28:00.026+0000
+CUS38
+MEM38
+West
+Forrest
+FALSE
+50
+6a64104e3a5836c83417d83428f665ce135bd13b36718caad47c0bb2c078cc69
+2023-02-04T03:28:00.026+0000
+CUS43
+MEM43
+Buster
+Jimmie
+TRUE
+48
+cd817e23e74f7f08de2905e4a7835ec3ac7b151948966d1246c57e485d7f1897
+2023-02-04T03:28:00.026+0000
+CUS50
+MEM50
+Neal
+Lucius
+TRUE
+59
+0f2a37041a87e1ecd079b0a2b489aa94a8723cb83493ef22cd49e6bcfa9015f3
+2023-02-04T03:28:00.026+0000
+CUS61
+MEM61
+Dayton
+Mark
+TRUE
+69
+fe8f904702c740b23ffb251e759bd7e58649a290b0a47135e8638f51332d15d6
+2023-02-04T03:28:00.026+0000
+CUS63
+MEM63
+Henry
+Clyde
+FALSE
+57
+f252446515d19e54ba26df427d35d8dc9f548e0d3016b5b329c0b6eaca6ce491
+2023-02-04T03:28:00.026+0000
+CUS71
+MEM71
+Darius
+Carlton
+TRUE
+83
+a26a068c477b978529cd126bc0837f9c225ada12179f733aa6eb02db4b95e0e9
+2023-02-04T03:28:00.026+0000
+CUS72
+MEM72
+Benjamine
+Jay
+FALSE
+48
+b4855dcc6a87b3b719b31df4e1c03c88f5a1001339f136b9e382a335edb5cc1f
+2023-02-04T03:28:00.026+0000
+CUS78
+MEM78
+Hilliard
+Warner
+TRUE
+88
+d53aa932015683fba283c5d71682889b21226b7de82a6a4d088a4e9d18f439df
+2023-02-04T03:28:00.026+0000
+CUS81
+MEM81
+Avery
+Christ
+TRUE
+31
+ff09576d190994c07be6e73c80e62e8a8371e6ed21e477d6fa9e065d905e00a7
+2023-02-04T03:28:00.026+0000
+CUS84
+MEM84
+Ulysses
+Lafayette
+FALSE
+50
+a285d057e85624f755ecb2bf447977c53200823941e1c78a648413e34f2e30f1
+2023-02-04T03:28:00.026+0000
+CUS91
+MEM91
+Calvin
+Christ
+FALSE
+80
+1,000 rows
+|
+Truncated data
+SHOW TABLES IN global_temp;
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+global_temp
+vw_state_customers_global
+true
+vw_premium_customers_temp
+true
+2 rows
+CREATE OR REPLACE VIEW vw_state_customers_permanent
+AS
+SELECT * 
+  FROM lending_loan_tmp.customer_details
+ WHERE state like 'N%'
+OK
+SELECT * FROM vw_state_customers_permanent;
+Table
+ 
+customer_key
+ingest_date
+customer_id
+member_id
+first_name
+last_name
+premium_status
+age
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+604b97965321c97849222f11ff9a8ac42ab15ad730de3981e8a234c99bdfde28
+2023-02-04T03:28:00.026+0000
+CUS6
+MEM6
+Colonel
+Raymond
+TRUE
+34
+1a9af642a095835f1c50fd0e141fc3d278e45e1707b7fcfab21f200e008dbf8b
+2023-02-04T03:28:00.026+0000
+CUS19
+MEM19
+Erwin
+Wong
+TRUE
+38
+eae03b62bbd0d7b8d78d549dd13a60f99c69c855a7b29cf6f43397c2c17d14e5
+2023-02-04T03:28:00.026+0000
+CUS29
+MEM29
+Horatio
+Dave
+TRUE
+64
+7672768ff9deb992d1ec3f70a7e64ce021e3e5cd1eac69392da9b74add35c69f
+2023-02-04T03:28:00.026+0000
+CUS31
+MEM31
+Bertram
+Eric
+TRUE
+75
+f2a5c9f2f74fbca681abe5d302251b7628167f88784672f7a3505ae827452514
+2023-02-04T03:28:00.026+0000
+CUS36
+MEM36
+Joel
+Saul
+TRUE
+39
+65e95e9f5022bd007a38fb5066c057dc88b968ee3d354fe5dca0962e8076cfb2
+2023-02-04T03:28:00.026+0000
+CUS57
+MEM57
+Harris
+Carleton
+FALSE
+81
+ad79b0f92378f167855be517c985a1bcd26f74bfc70310167e68a4e225ad0cb6
+2023-02-04T03:28:00.026+0000
+CUS66
+MEM66
+Claud
+Manford
+TRUE
+26
+0729a89378e83940b9b0c58813a7a60ccacd55881f7e31224ffce0f4e3b53dcf
+2023-02-04T03:28:00.026+0000
+CUS75
+MEM75
+Justus
+Jose
+TRUE
+47
+5f0890d38ff85b727ad90c6989b274fc6c6ea793b7b4ef90adbabe2a2f07926c
+2023-02-04T03:28:00.026+0000
+CUS76
+MEM76
+Baxter
+Colonel
+TRUE
+29
+081aae72cba3689f17b798249949916deefea67fe16768a6d9a91e18b91337fc
+2023-02-04T03:28:00.026+0000
+CUS110
+MEM110
+Dan
+Amos
+TRUE
+39
+262dd95c78e4dbc7aaa09d97bb11faffb20cfced442a90677fed4b6300b681d0
+2023-02-04T03:28:00.026+0000
+CUS127
+MEM127
+Gustave
+Webster
+TRUE
+33
+fc2778aa076eafb06c4ba2cc94b42817117300c8708224486548db32124d20c8
+2023-02-04T03:28:00.026+0000
+CUS135
+MEM135
+Harris
+Bill
+TRUE
+75
+92b4db68d9abfcfe2595b671598e45799139b08f26219177d28dc72456df5e05
+2023-02-04T03:28:00.026+0000
+CUS141
+MEM141
+Leonard
+Aron
+FALSE
+72
+c2e7e5021aac75affc1187b8def907ad4c5d9eb1956ef84c8e5ba6c202707005
+2023-02-04T03:28:00.026+0000
+CUS160
+MEM160
+Abel
+Carl
+TRUE
+59
+ce5257db14bb418e470d979f785f58e24e7b2e7b7c3563acf87242f14bf5e847
+2023-02-04T03:28:00.026+0000
+CUS168
+MEM168
+Ollie
+Gust
+TRUE
+26
+5cf374a4660d65ecd56337999f586841080a632e4030ea89a7e6fde88b32e490
+2023-02-04T03:28:00.026+0000
+CUS169
+MEM169
+Martin
+Everett
+TRUE
+67
+27dc73d0a7f12fae6c7eb8b55829364653ad7bdcf57428f48128b58ac112aa6a
+2023-02-04T03:28:00.026+0000
+CUS186
+MEM186
+Paul
+Palmer
+TRUE
+58
+1,000 rows
+|
+Truncated data
+SHOW TABLES IN lending_loan_tmp;
+Table
+ 
+database
+tableName
+isTemporary
+1
+2
+3
+4
+5
+lending_loan_tmp
+customer_details
+false
+lending_loan_tmp
+customer_details_alaska
+false
+lending_loan_tmp
+customer_details_external
+false
+vw_premium_customers
+true
+vw_premium_customers_temp
+true
+5 rows
+SHOW VIEWS IN lending_loan_tmp;
+Table
+ 
+namespace
+viewName
+isTemporary
+isMaterialized
+1
+vw_premium_customers_temp
+true
+false
+1 row
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+databricks-logomount_adls_storage(Python)
+ Import Notebook
+storage_account_name = "financeaccount2023"
+client_id            = "ca5435c9-1408-40bb-b921-93b63718f94f"
+tenant_id            = "ba608348-a13c-43e7-9374-2e4df14c59ba"
+client_secret        = "Eqw8Q~cfiBPg8LahpyfeN-hOarLg-1DiZLEdVdpD"
+ 
+configs = {"fs.azure.account.auth.type": "OAuth",
+           "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
+           "fs.azure.account.oauth2.client.id": f"{client_id}",
+           "fs.azure.account.oauth2.client.secret": f"{client_secret}",
+           "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
+def mount_adls(container_name):
+  dbutils.fs.mount(
+    source = f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/",
+    mount_point = f"/mnt/{storage_account_name}/{container_name}",
+    extra_configs = configs)
+#test blob created to mount
+mount_adls("raw-data-temp")
+dbutils.fs.mounts()
+Out[5]: [MountInfo(mountPoint='/databricks-datasets', source='databricks-datasets', encryptionType=''),
+ MountInfo(mountPoint='/mnt/datasetbigdata/raw-data-test', source='abfss://raw-data-test@datasetbigdata.dfs.core.windows.net/', encryptionType=''),
+ MountInfo(mountPoint='/mnt/datasetbigdata/raw-data', source='abfss://raw-data@datasetbigdata.dfs.core.windows.net/', encryptionType=''),
+ MountInfo(mountPoint='/databricks/mlflow-tracking', source='databricks/mlflow-tracking', encryptionType=''),
+ MountInfo(mountPoint='/databricks-results', source='databricks-results', encryptionType=''),
+ MountInfo(mountPoint='/databricks/mlflow-registry', source='databricks/mlflow-registry', encryptionType=''),
+ MountInfo(mountPoint='/mnt/datasetbigdata/processed-data', source='abfss://processed-data@datasetbigdata.dfs.core.windows.net/', encryptionType=''),
+ MountInfo(mountPoint='/mnt/datasetbigdata/raw-data-temp', source='abfss://raw-data-temp@datasetbigdata.dfs.core.windows.net/', encryptionType=''),
+ MountInfo(mountPoint='/', source='DatabricksRoot', encryptionType='')]
+dbutils.fs.ls("/mnt/datasetbigdata")
+Out[1]: [FileInfo(path='dbfs:/mnt/datasetbigdata/processed-data/', name='processed-data/', size=0, modificationTime=0),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/', name='raw-data/', size=0, modificationTime=0),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data-test/', name='raw-data-test/', size=0, modificationTime=0)]
+#listing files inside raw-data container
+dbutils.fs.ls("/mnt/datasetbigdata/raw-data/lending_loan")
+Out[11]: [FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/account_details.csv', name='account_details.csv', size=14505716, modificationTime=1671881892000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_customer_data.csv', name='loan_customer_data.csv', size=7103819, modificationTime=1671881876000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_defaulters.csv', name='loan_defaulters.csv', size=7384912, modificationTime=1672770582000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_details.csv', name='loan_details.csv', size=15939670, modificationTime=1672672351000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_investors.csv', name='loan_investors.csv', size=8944023, modificationTime=1673465583000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_payment.csv', name='loan_payment.csv', size=11281312, modificationTime=1672682710000)]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+databricks-logomount_adls_storage_secrets(Python)
+ Import Notebook
+dbutils.secrets.help()
+
+dbutils.secrets.listScopes()
+Out[1]: [SecretScope(name='databricks-keyvault-2023'),
+ SecretScope(name='databricks-secret-client-id'),
+ SecretScope(name='test-secret-scope')]
+dbutils.secrets.list("test-secret-scope")
+Out[2]: [SecretMetadata(key='databricks-secret-client-id'),
+ SecretMetadata(key='databricks-secret-secret-id'),
+ SecretMetadata(key='databricks-secret-tenant-id')]
+dbutils.secrets.get(scope="test-secret-scope", key="databricks-client-id")
+Out[6]: '[REDACTED]'
+storage_account_name = "datasetbigdata"
+client_id            = dbutils.secrets.get(scope="test-secret-scope", key="databricks-secret-client-id")
+tenant_id            = dbutils.secrets.get(scope="test-secret-scope", key="databricks-secret-tenant-id")
+client_secret        = dbutils.secrets.get(scope="test-secret-scope", key="databricks-secret-secret-id")
+configs = {"fs.azure.account.auth.type": "OAuth",
+           "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
+           "fs.azure.account.oauth2.client.id": f"{client_id}",
+           "fs.azure.account.oauth2.client.secret": f"{client_secret}",
+           "fs.azure.account.oauth2.client.endpoint": f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"}
+def mount_adls(container_name):
+  dbutils.fs.mount(
+    source = f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/",
+    mount_point = f"/mnt/{storage_account_name}/{container_name}",
+    extra_configs = configs)
+#mounting the container created to store the raw files 
+mount_adls("raw-data")
+dbutils.fs.mounts()
+Out[8]: [MountInfo(mountPoint='/databricks-datasets', source='databricks-datasets', encryptionType=''),
+ MountInfo(mountPoint='/mnt/datasetbigdata/raw-data-test', source='abfss://raw-data-test@datasetbigdata.dfs.core.windows.net/', encryptionType=''),
+ MountInfo(mountPoint='/mnt/datasetbigdata/raw-data', source='abfss://raw-data@datasetbigdata.dfs.core.windows.net/', encryptionType=''),
+ MountInfo(mountPoint='/databricks/mlflow-tracking', source='databricks/mlflow-tracking', encryptionType=''),
+ MountInfo(mountPoint='/databricks-results', source='databricks-results', encryptionType=''),
+ MountInfo(mountPoint='/databricks/mlflow-registry', source='databricks/mlflow-registry', encryptionType=''),
+ MountInfo(mountPoint='/mnt/datasetbigdata/processed-data', source='abfss://processed-data@datasetbigdata.dfs.core.windows.net/', encryptionType=''),
+ MountInfo(mountPoint='/', source='DatabricksRoot', encryptionType='')]
+dbutils.fs.ls("/mnt/datasetbigdata/raw-data/lending_loan/")
+Out[11]: [FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/account_details.csv', name='account_details.csv', size=14505716, modificationTime=1671881892000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_customer_data.csv', name='loan_customer_data.csv', size=7103819, modificationTime=1671881876000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_defaulters.csv', name='loan_defaulters.csv', size=7384912, modificationTime=1672770582000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_details.csv', name='loan_details.csv', size=15939670, modificationTime=1672672351000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_investors.csv', name='loan_investors.csv', size=8944023, modificationTime=1673465583000),
+ FileInfo(path='dbfs:/mnt/datasetbigdata/raw-data/lending_loan/loan_payment.csv', name='loan_payment.csv', size=11281312, modificationTime=1672682710000)]
+#to unmount the container created
+dbutils.fs.unmount("/mnt/datasetbigdata/raw-data")
+/mnt/datasetbigdata/raw-data has been unmounted.
+Out[8]: True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
